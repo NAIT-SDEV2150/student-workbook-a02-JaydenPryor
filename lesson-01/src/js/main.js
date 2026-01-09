@@ -55,21 +55,9 @@ const tasks = [
 	{title: "Don\'t do homework", done: false},
 ]
 // TODO: Use a loop to count completed tasks
-let completed = 0;
-for (let i = 0; i < tasks.length; i++) {
-	if (tasks[i].done) {
-		completed++;
-	}
-}
 
-let completedCount = 0;
-for (const task of tasks) {
-	if (task.done) {
-		completedCount++;
-	}
-}
 // TODO: Display: "Completed: X of Y"
-output.textContent = `Completed: ${completedCount} of ${tasks.length}`
+
 // --------------------------------------------------
 // STEP 5: Problem solving – build HTML from data
 // --------------------------------------------------
@@ -82,11 +70,17 @@ output.textContent = `Completed: ${completedCount} of ${tasks.length}`
 // - Add <li> elements with a class of 'done' or 'todo'
 // - Close the list and return the string
 function renderTaskList(items) {
-	let html = '<ul>'
+	let completedCount = 0;
+	for (const task of tasks) {
+		if (task.done) {
+			completedCount++;
+		}
+	}
+	let html = `<p>Completed: ${completedCount} of ${tasks.length}</p><ul>`
 	for (const item of items) {
 		const status = item.done ? 'done' : 'todo'
 		// html += `<li class="${status}">${item.title}</li>`
-		html += `<li class="${status}">${item.title} (${status})</li>`
+		html += `<li class="${status}"><input type="checkbox"${item.done ? " checked" : ""}></input> ${item.title} (${status})</li>`
 	}
 	html += '</ul>'
 	return html
@@ -139,14 +133,16 @@ btnClear.addEventListener('click', clearUI)
 const txtTask = document.getElementById('txt-task')
 const btnAdd = document.getElementById('btn-add')
 
-btnAdd.addEventListener('click', function() {
+function handleAddTask() {
 	const title = txtTask.value.trim()
 	if (!title) return;
 
 	tasks.push({ title, done: false })
 	list.innerHTML = renderTaskList(tasks)
 	txtTask.value = ''
-});
+}
+
+btnAdd.addEventListener('click', handleAddTask);
 // --------------------------------------------------
 // STEP 9: Student Exercise
 // --------------------------------------------------
@@ -172,13 +168,16 @@ function toggleDone(title) {
 list.addEventListener("click", function(event) {
 	console.log(event.target)
 	
-	const parent = event.target.parentElement
+	const parent = list.querySelector("ul")
+	
+	//target should be the li. theres probably a smarter way to do this but i dont know it
+	const target = event.target.parentElement.tagName == "UL" ? event.target : event.target.parentElement
 	
 	//toggleDone is not suitable here as we dont have the todo item's titles. also you could have multiple todos with the same title
 	//find index in parent element's children
 	let index = -1
 	for (let i = 0; i < parent.childElementCount; i++) {
-		if (parent.children[i] == event.target) {
+		if (parent.children[i] == target) {
 			index = i
 			break
 		}
@@ -196,3 +195,9 @@ list.addEventListener("click", function(event) {
 //      the task (notice we aren't using a form
 //    - Display a summary line above the list
 //      e.g. "Completed: 2 of 3"
+txtTask.addEventListener("keypress", function(event) {
+	console.log(event)
+	if (event.key == "Enter") {
+		handleAddTask()
+	}
+})
